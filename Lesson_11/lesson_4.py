@@ -7,7 +7,10 @@ class MoneyBox:
         return self.coins + v <= self.capacity
 
     def add(self, v):
-        self.coins += v
+        if self.can_add(v):
+            self.coins += v
+        else:
+            print("Емкость копилки превышена.")
 
 
 money_box = MoneyBox(10)
