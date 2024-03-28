@@ -1,0 +1,114 @@
+1. Создать таблицу с заданными ограничениями и полями.
+   Заполнить данные 15 актёров.
+
+CREATE TABLE "actors" (
+	"id"	INTEGER UNIQUE,
+	"name"	TEXT NOT NULL,
+	"surname"	TEXT NOT NULL,
+	"age"	INTEGER CHECK("age" BETWEEN 5 AND 99),
+	"movie_name"	TEXT,
+	"budget"	INTEGER DEFAULT 10000000,
+	"manager"	TEXT,
+	"release_year"	INTEGER,
+	"sex"	TEXT CHECK("sex" IN ('male', 'female')),
+	PRIMARY KEY("id" AUTOINCREMENT)
+)
+
+INSERT INTO actors (name, surname, age, movie_name, manager, release_year, sex)
+VALUES
+('Brad', 'Pitt', 55, 'Once Upon a Time in Hollywood', 'Jennifer Aniston', 2019, 'male'),
+('Angelina', 'Jolie', 44, 'Maleficent', 'Brad Pitt', 2014, 'female'),
+('Leonardo', 'DiCaprio', 45, 'The Revenant', 'Camila Morrone', 2015, 'male'),
+('Scarlett', 'Johansson', 35, 'Avengers: Endgame', 'Colin Jost', 2019, 'female'),
+('Tom', 'Cruise', 57, 'Mission: Impossible - Fallout', 'Katie Holmes', 2018, 'male'),
+('Jennifer', 'Lawrence', 29, 'Silver Linings Playbook', 'Cooke Maroney', 2012, 'female'),
+('Robert', 'Downey Jr.', 54, 'Iron Man', 'Susan Downey', 2008, 'male'),
+('Emma', 'Stone', 31, 'La La Land', 'Dave McCary', 2016, 'female'),
+('Johnny', 'Depp', 56, 'Pirates of the Caribbean: Curse of the Black Pearl', 'Amber Heard', 2003, 'male'),
+('Meryl', 'Streep', 70, 'The Devil Wears Prada', 'Don Gummer', 2006, 'female'),
+('Will', 'Smith', 51, 'Men in Black', 'Jada Pinkett Smith', 1997, 'male'),
+('Anne', 'Hathaway', 37, 'Les Miserables', 'Adam Shulman', 2012, 'female'),
+('Denzel', 'Washington', 65, 'Training Day', 'Pauletta Washington', 2001, 'male'),
+('Cate', 'Blanchett', 51, 'Blue Jasmine', 'Andrew Upton', 2013, 'female'),
+('Samuel', 'L. Jackson', 71, 'Pulp Fiction', 'LaTanya Richardson', 1994, 'male');
+
+====================================================================================
+
+2. Создать колонку fee REAL, заполнить значение гонораров за фильмы.
+
+ALTER TABLE actors
+ADD COLUMN fee REAL;
+
+===============================================================================
+
+3. Переименовать колонку fee в fee_actors. Добавить колонку city,
+   где проживают актёры в данный момент и внести все изменения в таблицу.
+
+ALTER table actors
+rename COLUMN fee to fee_actors;
+
+ALTER TABLE actors
+ADD COLUMN city TEXT;
+
+=================================================================================
+
+4. Вывести всех актёров которые снимались в период с 1990 по 2000 год.
+   Актёры должны быть выведены только 1 раз.
+
+SELECT DISTINCT name, surname
+FROM actors
+WHERE release_year BETWEEN 1990 AND 2000;
+
+================================================================================
+
+5. Вывести все фильмы в которых приняли участие 2 и более актёра из нашей базы данных.
+   Вывод организовать в порядке возрастания фамилий!
+
+SELECT movie_name
+FROM actors
+GROUP BY movie_name
+HAVING COUNT(*) >= 2
+ORDER BY surname;
+=================================================================================
+
+6. Вывести количество актёров мужского пола,
+   которые есть в таблице которые старше 55 лет.
+
+SELECT DISTINCT name, surname from actors
+where sex='male' and age > 55;
+=================================================================================
+
+7. Вывести всех актёров которые приняли участие в 2-х и более фильмах,
+   которые есть а бд и которые имеют на своём счету 10000000$.
+
+SELECT name,surname, movie_name
+FROM actors
+WHERE id IN (
+SELECT id
+FROM actors
+GROUP BY movie_name
+HAVING COUNT(*) >= 2 AND SUM(fee_actors) >= 10000000
+);
+================================================================================
+
+8. Вывести общую сумму всех гонораров актёров,
+   в фильмах снятых в период с 1995 по 2005 год.
+
+SELECT SUM(fee_actors)
+FROM actors
+WHERE release_year BETWEEN 1995 AND 2005;
+================================================================================
+9. Вывести фильмы и имена и фамилии актёров,
+   которым на момент выпуска фильма в прокат было меньше 35 лет.
+
+SELECT movie_name, name, surname
+FROM actors
+WHERE (age - (2024 - release_year)) < 35;
+================================================================================
+                               Допол. задание.
+10. Вывести все фильмы название которых состоит из 2 слов.
+    Использовать регулярные выражения.
+
+SELECT movie_name
+FROM actors
+WHERE movie_name REGEXP '^[A-Za-z]+ [A-Za-z]+$';
