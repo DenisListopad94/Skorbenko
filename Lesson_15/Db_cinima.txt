@@ -1,0 +1,111 @@
+
+=====================================================
+2. Добавить новое поле finance INTEGER
+   в таблицу bank_accounts значение задать NULL.
+
+ALTER TABLE bank_accounts ADD COLUMN finance INTEGER;
+
+=====================================================
+3. Вывести первых 10  режиссёров, которые сняли высокобюджетные фильмы.
+   Режиссёры не должны повторяться.
+
+SELECT DISTINCT director_id
+FROM movies
+WHERE budget > 100000000
+LIMIT 10;
+
+======================================================
+4. Вывести актёров и режиссёров, которые не участвовали не в одном из фильмов.
+
+SELECT actors_id, name, surname, director_id
+FROM actors
+LEFT JOIN movies ON actors.actors_id = movies.director_id
+WHERE movies.director_id IS NULL;
+
+=======================================================
+5. Вывести все фильмы,
+   а так же всех актёров кассовые сборы которых превысили 150000000.
+
+SELECT movies.name_movie, movies.budget, actors.name, actors.surname
+FROM movies
+INNER JOIN actors_movies ON movies.movie_id = actors_movies.movies_id
+INNER JOIN actors ON actors.actors_id = actors_movies.actors_id
+WHERE movies.budget > 150000000;
+
+========================================================
+6. Вывести всех режиссёров которые снимали фильмы до 2000 года.
+   Режиссёры не должны повторятся
+
+SELECT DISTINCT director_id
+FROM movies
+WHERE release < 2000;
+
+========================================================
+7. Добавить фильмы для актёров и режиссёров,
+   у которых нет зависимости в таблице movies.
+   Не забыть сделать изменения в таблице actors_movies.
+
+INSERT INTO movies (name_movie, release, budget, director_id)
+VALUES ('Avatar 2', 2022, 50000000, NULL),
+       ('Spider-Man: Across the Spider-Verse', 2023, 60000000, NULL);
+
+UPDATE actors_movies
+SET movies_id = (SELECT MAX(movie_id) FROM movies WHERE name_movie = 'Avatar 2')
+WHERE actors_id IN (SELECT actors_id FROM actors WHERE actors_id NOT IN (SELECT actors_id FROM actors_movies));
+
+UPDATE actors_movies
+SET movies_id = (SELECT MAX(movie_id) FROM movies WHERE name_movie = 'Spider-Man: Across the Spider-Verse')
+WHERE actors_id IN (SELECT director_id FROM directors WHERE director_id NOT IN (SELECT director_id FROM movies));
+
+===========================================================
+8. Добавить колонку rating к фильмам. Задать значения рейтинга фильмов.
+
+ALTER TABLE movies
+ADD rating DECIMAL(3,1);
+
+UPDATE movies
+SET rating = CASE
+        WHEN name_movie = 'Titanic' THEN 8.5
+        WHEN name_movie = 'Catch me if you can' THEN 7.8
+        WHEN name_movie = 'Forrest Gump' THEN 8.8
+        WHEN name_movie = 'Terminator 2' THEN 8.9
+        WHEN name_movie = 'Mr. & Mrs. Smith' THEN 7.4
+    END;
+
+============================================================
+
+9. Вывести режиссёров и фильмы с рейтингом ниже среднего до 2000 года
+
+SELECT director_id, name_movie, rating
+FROM movies
+WHERE release < 2000 AND rating < (SELECT AVG(rating) FROM movies WHERE release < 2000);
+
+============================================================
+10. Вывести всех актёров, которые знакомы с 2-мя и более другими актёрами.
+
+============================================================
+допол. задачи
+11. Вывести первых 5 самых высокооплачиваемых актёров.
+
+SELECT name, surname, finance
+FROM actors, bank_accounts
+ORDER BY finance DESC
+LIMIT 5;
+
+============================================================
+12. Вывести всех режиссёров и актёров которые были
+    задействованы только в 1 фильме
+
+SELECT name, surname
+FROM actors
+JOIN movies ON actors_id = director_id
+GROUP BY actors_id
+HAVING COUNT(movies.movie_id) = 1
+UNION
+SELECT name, surname
+FROM actors
+JOIN movies ON actors_id = movies.movie_id
+GROUP BY actors_id
+HAVING COUNT(movies.movie_id) = 1;
+
+============================================================
